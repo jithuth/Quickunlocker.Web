@@ -1,0 +1,159 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Unlock Your Router, WiFi & MiFi Today";
+}
+
+<div class="container-fluid py-5">
+    <div class="row justify-content-between align-items-center">
+        <!-- Unlock Wizard Section -->
+        <div class="col-lg-6 mb-5 mb-lg-0">
+            <h1 class="mb-3 text-white" style="font-weight:700; font-size:2.7rem;">
+                Unlock Your <span style="color:#37e2f1">Router, WiFi & MiFi</span><br />
+                <span style="font-weight:700; color:#ffe45c;">Today With Genuine Unlocker</span>
+            </h1>
+            <h4 class="mb-4" style="color:#d1d5fa;">Unlocking <b>Via IMEI</b></h4>
+            <p style="color:#b3d8ee;">
+                <b>Unlock your router, modem, or MiFi device</b> quickly, safely, and for free! This all-in-one <span style="color:#ffe45c;">router unlock guide</span> explains every working method from IMEI unlock code generators and professional 4G/5G router unlocking tools.
+                <br><br>
+                Whether you own a <span style="color:#fff;">Huawei, ZTE, D-Link, Nokia, Telstra, FIBOCOM, QUECTEL, GreenPacket, MEIGLINK, Soyealink, AVXAV, AURORA, TD TECH, BROVI, or FLYBOX</span> Wi-Fi router, you can <b>remove the SIM lock</b> and use it with any carrier worldwide.
+            </p>
+        </div>
+        <!-- Wizard -->
+        <div class="col-lg-5">
+            <div class="wizard-box shadow-lg">
+                <form id="unlockForm" autocomplete="off" onsubmit="return false;">
+                    <div class="mb-3">
+                        <label class="form-label">Select Country</label>
+                        <select class="form-select" id="countrySelect">
+                            <option value="Kuwait" selected>Kuwait</option>
+                            <!-- Add more countries here -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select Network</label>
+                        <select class="form-select" id="networkSelect">
+                            <option value="STC Kuwait" selected>STC Kuwait</option>
+                            <!-- Add more networks here -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">IMEI Number</label>
+                        <input class="form-control" id="imeiInput" maxlength="15" placeholder="Enter IMEI (15 digits)" />
+                        <div id="imeiStatus" class="mt-2 small"></div>
+                    </div>
+                    <div class="mb-3" id="deviceInfo" style="display:none;">
+                        <div class="d-flex align-items-center">
+                            <img id="brandLogo" src="https://upload.wikimedia.org/wikipedia/commons/2/29/Huawei_logo.svg" style="width:40px; height:40px; margin-right:8px;" />
+                            <div>
+                                <div><b>Brand:</b> <span id="brandName"></span></div>
+                                <div><b>Model:</b> <span id="modelName"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn gradient-btn w-100 mt-3 py-2" type="button" id="unlockBtn" disabled>
+                        <i class="bi bi-unlock-fill"></i> Buy Router Unlock Code
+                    </button>
+                </form>
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Brand Logo Row 
+    <div id="brandLogoMarquee" class="brand-logo-marquee"></div>
+    -->
+    <!-- Video/Technology Info Cards -->
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center" style="color:#fff; font-weight:700;">
+            Best <span style="color:#37e2f1;">Router & MiFi</span> Unlocking Videos
+        </h2>
+        <div class="row">
+            @* Demo grid: repeat as needed *@
+            <div class="col-md-4 col-lg-3">
+                <div class="video-card p-2">
+                    <img src="/images/video1.jpg" class="w-100" alt="Vodafone Egypt Unlock" />
+                    <div class="p-3">
+                        <span class="video-label mb-2">ROUTER</span>
+                        <div class="video-title mb-1">How to Vodafone 5G Brovi CPE 5 H153-381 Unlocking Egypt</div>
+                        <div style="color:#b3d8ee; font-size:0.95em;">The video demonstrates the process for unlocking the SIM-locked Huawei/Vodafone H153-381 5G router.</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Repeat .col for other video/info cards (add real images/links) -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+                      async function loadBrandLogoMarquee() {
+            const marqueeElem = document.getElementById("brandLogoMarquee");
+            if (!marqueeElem) return;
+
+            try {
+                const res = await axios.get('/api/DeviceLookup/available');
+                const logos = res.data || [];
+                if (logos.length === 0) return;
+
+                // Double for seamless loop
+                const logosHtml = logos.concat(logos).map(logo =>
+                    `<img src="${logo}" onerror="this.src='/images/default_brand.png';"/>`
+                ).join('');
+
+                marqueeElem.innerHTML = `<div class="marquee-track">${logosHtml}</div>`;
+            } catch {
+                marqueeElem.textContent = "Brand logos could not be loaded.";
+            }
+        }
+      //  loadBrandLogoMarquee();
+
+
+    </script>
+
+    <script>
+        // Wizard logic: IMEI input validation and API check
+        const imeiInput = document.getElementById('imeiInput');
+        const imeiStatus = document.getElementById('imeiStatus');
+        const deviceInfo = document.getElementById('deviceInfo');
+        const unlockBtn = document.getElementById('unlockBtn');
+        const brandName = document.getElementById('brandName');
+        const modelName = document.getElementById('modelName');
+        const brandLogo = document.getElementById('brandLogo');
+
+        imeiInput.addEventListener('input', async function() {
+            const imei = imeiInput.value;
+            imeiStatus.style.color = "#eee";
+            unlockBtn.disabled = true;
+            deviceInfo.style.display = "none";
+            if (imei.length === 15 && /^\d+$/.test(imei)) {
+                imeiStatus.textContent = "Checking device...";
+                try {
+                    const res = await axios.get('/api/DeviceLookup/lookup?imei=' + imei);
+                    if(res.data && res.data.brand && res.data.model) {
+                        imeiStatus.textContent = "IMEI is verified, brand and model are Found.";
+                        imeiStatus.style.color = "#53f12b";
+                        brandName.textContent = res.data.brand;
+                        modelName.textContent = res.data.model;
+                        brandLogo.src = res.data.brandLogoUrl;
+                        deviceInfo.style.display = "";
+                        unlockBtn.disabled = false;
+                    } else {
+                        imeiStatus.textContent = "Device not found.";
+                        imeiStatus.style.color = "#ff5050";
+                    }
+                } catch {
+                    imeiStatus.textContent = "Device not found.";
+                    imeiStatus.style.color = "#ff5050";
+                }
+            } else {
+                imeiStatus.textContent = "Enter 15-digit IMEI number.";
+                imeiStatus.style.color = "#eee";
+            }
+        });
+    </script>
+}
