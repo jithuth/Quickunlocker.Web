@@ -1,0 +1,38 @@
+﻿@page
+@model Quickunlocker.Web.Pages.Account.LoginModel
+@{
+    Layout = "_AdminLTELite"; // Use your AdminLTE layout if you want
+    ViewData["Title"] = "Login";
+}
+
+<div class="login-box">
+    <div class="login-logo">
+        <b>Quick</b>Unlocker
+    </div>
+    <div class="card">
+        <div class="card-body login-card-body">
+            <p class="login-box-msg">Sign in to start your session</p>
+
+            <form method="post">
+                <div class="input-group mb-3">
+                    <input asp-for="Input.Email" class="form-control" placeholder="Email" />
+                </div>
+                <div class="input-group mb-3">
+                    <input asp-for="Input.Password" class="form-control" placeholder="Password" type="password" />
+                </div>
+                <div class="row">
+                    <div class="col-8">
+                        <!-- you can add remember me etc. -->
+                    </div>
+                    <div class="col-4">
+                        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                    </div>
+                </div>
+            </form>
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger mt-3">@Model.ErrorMessage</div>
+            }
+        </div>
+    </div>
+</div>

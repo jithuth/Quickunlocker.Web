@@ -4,6 +4,9 @@ using Quickunlocker.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSession();
+
+
 builder.Services.AddRazorPages();
 builder.Services.AddControllers(); // <-- Add this!
 
@@ -35,6 +38,7 @@ app.MapControllers(); // <-- Add this!
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSession();
 app.UseRouting();
 app.UseAuthorization();
 app.MapRazorPages();

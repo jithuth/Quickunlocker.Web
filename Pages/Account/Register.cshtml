@@ -1,0 +1,42 @@
+﻿@page
+@model RegisterModel
+@{
+    Layout = "_AdminLTELite"; // Or your shared layout
+    ViewData["Title"] = "Register";
+}
+
+<div class="login-box">
+    <div class="login-logo">
+        <b>QuickUnlocker</b> <small>Register</small>
+    </div>
+    <div class="card">
+        <div class="card-body login-card-body">
+            <form method="post">
+                <div class="input-group mb-3">
+                    <input asp-for="Input.Email" class="form-control" placeholder="Email" />
+                </div>
+                <div class="input-group mb-3">
+                    <input asp-for="Input.Password" class="form-control" type="password" placeholder="Password" />
+                </div>
+                <div class="input-group mb-3">
+                    <input asp-for="Input.ConfirmPassword" class="form-control" type="password" placeholder="Confirm Password" />
+                </div>
+                <div class="input-group mb-3">
+                    <input asp-for="Input.WhatsApp" class="form-control" placeholder="WhatsApp Number" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Register</button>
+            </form>
+            <p class="mb-1 mt-3">
+                <a asp-page="/Account/Login">I already have an account</a>
+            </p>
+            @if (Model.ErrorMessage != null)
+            {
+                <div class="alert alert-danger">@Model.ErrorMessage</div>
+            }
+            @if (Model.SuccessMessage != null)
+            {
+                <div class="alert alert-success">@Model.SuccessMessage</div>
+            }
+        </div>
+    </div>
+</div>
