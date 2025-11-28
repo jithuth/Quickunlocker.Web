@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Quickunlocker.Web.Data;
 using System.Security.Cryptography;
@@ -25,24 +25,35 @@ namespace Quickunlocker.Web.Pages.Account
 
         public IActionResult OnPost()
         {
-            if (!ModelState.IsValid) return Page();
+            if (!ModelState.IsValid)
+                return Page();
 
-            //var passwordHash = ComputeSha256Hash(Input.Password);
+            // If password hashing is enabled later, uncomment this
+            // var passwordHash = ComputeSha256Hash(Input.Password);
 
-            var user = _db.Users.FirstOrDefault(u => u.Email == Input.Email && u.Password == Input.Password);
+            var user = _db.Users.FirstOrDefault(u =>
+                u.Email == Input.Email &&
+                u.Password == Input.Password   // change to passwordHash later
+            );
+
             if (user == null)
             {
                 ErrorMessage = "Invalid email or password.";
                 return Page();
             }
 
-            // Simple login: set session or cookie
-            HttpContext.Session.SetString("UserId", user.Id.ToString());
+            // ✅ Store session values
+            HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetString("UserEmail", user.Email);
             HttpContext.Session.SetString("IsAdmin", user.IsAdmin ? "1" : "0");
 
-            // Redirect to dashboard or home
-            return RedirectToPage("/Index");
+            // ✅ Redirect based on role
+            if (user.IsAdmin)
+                return RedirectToPage("/AdminPanel/Index");   // Admin Dashboard
+            else
+                return RedirectToPage("/Index");         // Normal User Home
         }
+
 
         private static string ComputeSha256Hash(string rawData)
         {

@@ -1,0 +1,222 @@
+﻿@page
+@model Quickunlocker.Web.Pages.AdminPanel.Devices.IndexModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Device Management";
+    var searchValue = (Model.Search ?? "").Replace("'", "\\'").Replace("\"", "\\\"");
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Device Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Index">Home</a></li>
+                    <li class="breadcrumb-item active">Devices</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Device List</h3>
+                        <div class="card-tools">
+                            <a href="/AdminPanel/Devices/Create" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus"></i> Add New Device
+                            </a>
+                        </div>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body" style="position: relative; min-height: 300px;">
+                        <!-- Loading Overlay -->
+                        <div id="loadingOverlay" style="display:none;">
+                            <div class="overlay">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                        </div>
+
+                        <!-- Search Form -->
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <input type="text" id="searchInput" value="@Model.Search" class="form-control" placeholder="Search by Brand, Model, or TAC" autocomplete="off" />
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button" id="searchBtn">
+                                                <i class="fas fa-search"></i> Search
+                                            </button>
+                                            <button class="btn btn-secondary" type="button" id="clearBtn">
+                                                <i class="fas fa-times"></i> Clear
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table Container -->
+                        <div id="deviceTableContainer">
+                            <partial name="_DeviceTablePartial" model="Model" />
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (function() {
+            // Initialize variables
+            let currentPage = @Model.CurrentPage;
+            let currentSearch = '@Html.Raw(searchValue)';
+
+            console.log('Page loaded - Current Page:', currentPage, 'Current Search:', currentSearch);
+            console.log('jQuery version:', $.fn.jquery);
+
+            // Load devices via AJAX
+            function loadDevices(page, search) {
+                console.log('loadDevices called - Page:', page, 'Search:', search);
+                $('#loadingOverlay').show();
+                
+                $.ajax({
+                    url: '/AdminPanel/Devices',
+                    type: 'GET',
+                    data: {
+                        page: page,
+                        search: search || ''
+                    },
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(response) {
+                        console.log('AJAX success - Response length:', response.length);
+                        $('#deviceTableContainer').html(response);
+                        currentPage = page;
+                        currentSearch = search || '';
+                        
+                        // Update URL without reload
+                        let newUrl = '/AdminPanel/Devices?page=' + page;
+                        if (search) {
+                            newUrl += '&search=' + encodeURIComponent(search);
+                        }
+                        window.history.pushState({ page: page, search: search }, '', newUrl);
+                        
+                        // Re-bind pagination clicks
+                        bindPaginationClicks();
+                        
+                        $('#loadingOverlay').hide();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', {
+                            status: status,
+                            error: error,
+                            statusCode: xhr.status,
+                            responseText: xhr.responseText
+                        });
+                        alert('Error loading devices: ' + status + '\nCheck console for details.');
+                        $('#loadingOverlay').hide();
+                    }
+                });
+            }
+
+            // Bind pagination click events
+            function bindPaginationClicks() {
+                console.log('bindPaginationClicks called');
+                const $pagination = $('#pagination');
+                
+                if ($pagination.length === 0) {
+                    console.log('No pagination found on page');
+                    return;
+                }
+                
+                const $links = $pagination.find('a.page-link');
+                console.log('Found', $links.length, 'pagination links');
+                
+                $links.off('click').on('click', function(e) {
+                    e.preventDefault();
+                    const $this = $(this);
+                    const page = $this.data('page');
+                    const $parent = $this.parent();
+                    
+                    console.log('Pagination link clicked:', {
+                        page: page,
+                        hasDisabled: $parent.hasClass('disabled'),
+                        hasActive: $parent.hasClass('active')
+                    });
+                    
+                    if (page && page > 0 && !$parent.hasClass('disabled') && !$parent.hasClass('active')) {
+                        loadDevices(page, currentSearch);
+                    }
+                });
+            }
+
+            // Search button click
+            $('#searchBtn').on('click', function() {
+                console.log('Search button clicked');
+                const searchValue = $('#searchInput').val().trim();
+                console.log('Search value:', searchValue);
+                loadDevices(1, searchValue);
+            });
+
+            // Search on Enter key
+            $('#searchInput').on('keypress', function(e) {
+                if (e.which === 13 || e.keyCode === 13) {
+                    e.preventDefault();
+                    console.log('Enter key pressed in search');
+                    $('#searchBtn').trigger('click');
+                }
+            });
+
+            // Clear button click
+            $('#clearBtn').on('click', function() {
+                console.log('Clear button clicked');
+                $('#searchInput').val('');
+                loadDevices(1, '');
+            });
+
+            // Handle browser back/forward buttons
+            window.addEventListener('popstate', function(e) {
+                console.log('Popstate event:', e.state);
+                if (e.state) {
+                    currentPage = e.state.page || 1;
+                    currentSearch = e.state.search || '';
+                    $('#searchInput').val(currentSearch);
+                    loadDevices(currentPage, currentSearch);
+                }
+            });
+
+            // Initialize on document ready
+            $(document).ready(function() {
+                console.log('Document ready - Initializing');
+                bindPaginationClicks();
+                
+                // Set initial state
+                window.history.replaceState({ page: currentPage, search: currentSearch }, '');
+                
+                console.log('Initialization complete');
+            });
+
+            // Make confirmDelete global
+            window.confirmDelete = function(deviceId) {
+                if (confirm('Are you sure you want to delete this device?')) {
+                    window.location.href = '/AdminPanel/Devices/Delete/' + deviceId;
+                }
+            };
+        })();
+    </script>
+}

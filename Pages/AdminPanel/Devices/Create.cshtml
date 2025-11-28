@@ -1,0 +1,93 @@
+﻿@page
+@model Quickunlocker.Web.Pages.AdminPanel.Devices.CreateModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Add Device";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add New Device</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Index">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Devices">Devices</a></li>
+                    <li class="breadcrumb-item active">Add Device</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Device Information</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <form method="post">
+                        <div class="card-body">
+                            @if (!ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+                            
+                            <div class="form-group">
+                                <label asp-for="Device.Tac">TAC (Type Allocation Code)</label>
+                                <input class="form-control" asp-for="Device.Tac" placeholder="Enter 8-digit TAC" />
+                                <span asp-validation-for="Device.Tac" class="text-danger"></span>
+                                <small class="form-text text-muted">TAC is the first 8 digits of the IMEI number.</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Device.Brand">Brand</label>
+                                <input class="form-control" asp-for="Device.Brand" placeholder="e.g., Apple, Samsung, Xiaomi" />
+                                <span asp-validation-for="Device.Brand" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Device.Model">Model</label>
+                                <input class="form-control" asp-for="Device.Model" placeholder="e.g., iPhone 15 Pro, Galaxy S24" />
+                                <span asp-validation-for="Device.Model" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Device.BrandLogoUrl">Brand Logo URL</label>
+                                <input class="form-control" asp-for="Device.BrandLogoUrl" placeholder="https://example.com/logo.png" />
+                                <span asp-validation-for="Device.BrandLogoUrl" class="text-danger"></span>
+                                <small class="form-text text-muted">Optional: URL to the brand logo image.</small>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        
+                        <div class="card-footer">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-save"></i> Save Device
+                            </button>
+                            <a class="btn btn-secondary" href="/AdminPanel/Devices">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

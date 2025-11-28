@@ -1,0 +1,110 @@
+@page
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "jQuery Test";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <h1>jQuery & AJAX Test Page</h1>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">jQuery Tests</h3>
+                    </div>
+                    <div class="card-body">
+                        <button id="testBtn" class="btn btn-primary">Click Me to Test jQuery</button>
+                        <div id="result" class="mt-3"></div>
+                        
+                        <hr />
+                        
+                        <h5>Test AJAX to Devices Page</h5>
+                        <button id="ajaxTestBtn" class="btn btn-success">Test AJAX Request</button>
+                        <div id="ajaxResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Console Output</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Open browser console (F12) to see debug messages</p>
+                        <ul>
+                            <li>jQuery version: <span id="jqVersion"></span></li>
+                            <li>$ defined: <span id="dollarDefined"></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        console.log('=== jQuery Test Page Loaded ===');
+        console.log('typeof $:', typeof $);
+        console.log('typeof jQuery:', typeof jQuery);
+        
+        if (typeof $ !== 'undefined') {
+            console.log('jQuery version:', $.fn.jquery);
+            $('#jqVersion').text($.fn.jquery);
+            $('#dollarDefined').text('YES').css('color', 'green');
+        } else {
+            $('#dollarDefined').text('NO - jQuery not loaded!').css('color', 'red');
+        }
+
+        $(document).ready(function() {
+            console.log('Document ready fired');
+            
+            $('#testBtn').on('click', function() {
+                console.log('Button clicked!');
+                $('#result').html('<div class="alert alert-success">jQuery is working! Button click detected.</div>');
+            });
+            
+            $('#ajaxTestBtn').on('click', function() {
+                console.log('AJAX Test button clicked');
+                $('#ajaxResult').html('<div class="alert alert-info">Testing AJAX...</div>');
+                
+                $.ajax({
+                    url: '/AdminPanel/Devices',
+                    type: 'GET',
+                    data: {
+                        page: 1,
+                        search: ''
+                    },
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(response) {
+                        console.log('AJAX Success!');
+                        console.log('Response length:', response.length);
+                        console.log('Response type:', typeof response);
+                        
+                        // Check if response contains table
+                        if (response.includes('<table')) {
+                            $('#ajaxResult').html('<div class="alert alert-success">? AJAX works! Received partial view with table.</div>');
+                        } else if (response.includes('<!DOCTYPE')) {
+                            $('#ajaxResult').html('<div class="alert alert-warning">?? AJAX returns full page instead of partial. Check backend AJAX detection.</div>');
+                        } else {
+                            $('#ajaxResult').html('<div class="alert alert-info">AJAX works but response format unexpected.</div>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', status, error);
+                        $('#ajaxResult').html('<div class="alert alert-danger">? AJAX failed: ' + status + '</div>');
+                    }
+                });
+            });
+        });
+    </script>
+}

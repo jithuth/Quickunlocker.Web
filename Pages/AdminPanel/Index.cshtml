@@ -1,0 +1,37 @@
+﻿@page
+@model Quickunlocker.Web.Pages.AdminPanel.IndexModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Dashboard";
+}
+<!-- Rest of your dashboard content here -->
+
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>@ViewData["Title"]</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/AdminPanel/Index">Home</a></li>
+                        <li class="breadcrumb-item active">Dashboard</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="alert alert-success mt-2">
+                Welcome to the <b>admin panel</b>!
+            </div>
+            <!-- Place your dashboard widgets, cards, or content here -->
+        </div>
+    </section>
+</div>
