@@ -1,0 +1,231 @@
+@page
+@model Quickunlocker.Web.Pages.AdminPanel.Networks.IndexModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Network Management";
+    var searchValue = (Model.Search ?? "").Replace("'", "\\'").Replace("\"", "\\\"");
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Mobile Network Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Index">Home</a></li>
+                    <li class="breadcrumb-item active">Networks</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">×</button>
+                        <h5><i class="icon fas fa-check"></i> Success!</h5>
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">×</button>
+                        <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Network List</h3>
+                        <div class="card-tools">
+                            <a href="/AdminPanel/Networks/Create" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus"></i> Add New Network
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body" style="position: relative; min-height: 300px;">
+                        <div id="loadingOverlay" style="display:none;">
+                            <div class="overlay">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <input type="text" id="searchInput" value="@Model.Search" class="form-control" placeholder="Search by Network or Country" autocomplete="off" />
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button" id="searchBtn">
+                                                <i class="fas fa-search"></i> Search
+                                            </button>
+                                            <button class="btn btn-secondary" type="button" id="clearBtn">
+                                                <i class="fas fa-times"></i> Clear
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-control" id="countryFilter">
+                                        <option value="">All Countries</option>
+                                        @foreach (var country in Model.Countries)
+                                        {
+                                            var isSelected = Model.CountryFilter == country.Id;
+                                            <option value="@country.Id" selected="@isSelected">
+                                                @country.Name
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="networkTableContainer">
+                            <partial name="_NetworkTablePartial" model="Model" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Are you sure you want to delete this network?</strong></p>
+                <p id="networkInfo"></p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> This is a soft delete. The network will be hidden but remain in the database.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            let currentPage = @Model.CurrentPage;
+            let currentSearch = '@Html.Raw(searchValue)';
+            let currentCountry = '@Model.CountryFilter';
+            let networkToDelete = null;
+
+            function loadNetworks(pageNum, search, countryId) {
+                $('#loadingOverlay').show();
+                var queryParams = '?page=' + pageNum;
+                if (search) queryParams += '&search=' + encodeURIComponent(search);
+                if (countryId) queryParams += '&countryId=' + countryId;
+                
+                $.ajax({
+                    url: '/AdminPanel/Networks' + queryParams,
+                    type: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function(response) {
+                        $('#networkTableContainer').html(response);
+                        currentPage = pageNum;
+                        currentSearch = search || '';
+                        currentCountry = countryId || '';
+                        window.history.pushState({ page: pageNum, search: search, countryId: countryId }, '', '/AdminPanel/Networks' + queryParams);
+                        bindPaginationClicks();
+                        $('#loadingOverlay').hide();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', error);
+                        alert('Error loading networks. Please try again.');
+                        $('#loadingOverlay').hide();
+                    }
+                });
+            }
+
+            function bindPaginationClicks() {
+                const $pagination = $('#pagination');
+                if ($pagination.length === 0) return;
+                
+                $pagination.find('a.page-link').off('click').on('click', function(e) {
+                    e.preventDefault();
+                    const pageNum = $(this).data('page');
+                    const $parent = $(this).parent();
+                    
+                    if (pageNum && pageNum > 0 && !$parent.hasClass('disabled') && !$parent.hasClass('active')) {
+                        loadNetworks(pageNum, currentSearch, currentCountry);
+                    }
+                });
+            }
+
+            $('#searchBtn').on('click', function() {
+                loadNetworks(1, $('#searchInput').val().trim(), $('#countryFilter').val());
+            });
+
+            $('#searchInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#searchBtn').trigger('click');
+                }
+            });
+
+            $('#clearBtn').on('click', function() {
+                $('#searchInput').val('');
+                $('#countryFilter').val('');
+                loadNetworks(1, '', '');
+            });
+
+            $('#countryFilter').on('change', function() {
+                loadNetworks(1, $('#searchInput').val().trim(), $(this).val());
+            });
+
+            window.addEventListener('popstate', function(e) {
+                if (e.state) {
+                    currentPage = e.state.page || 1;
+                    currentSearch = e.state.search || '';
+                    currentCountry = e.state.countryId || '';
+                    $('#searchInput').val(currentSearch);
+                    $('#countryFilter').val(currentCountry);
+                    loadNetworks(currentPage, currentSearch, currentCountry);
+                }
+            });
+
+            $(document).ready(function() {
+                bindPaginationClicks();
+                window.history.replaceState({ page: currentPage, search: currentSearch, countryId: currentCountry }, '');
+                setTimeout(function() { $('.alert').fadeOut('slow'); }, 5000);
+            });
+
+            window.confirmDelete = function(networkId, networkName, countryName) {
+                networkToDelete = networkId;
+                $('#networkInfo').html('<strong>Network:</strong> ' + networkName + '<br><strong>Country:</strong> ' + countryName);
+                $('#deleteModal').modal('show');
+            };
+
+            $('#confirmDeleteBtn').on('click', function() {
+                if (networkToDelete) {
+                    window.location.href = '/AdminPanel/Networks/Delete/' + networkToDelete;
+                }
+            });
+        })();
+    </script>
+}

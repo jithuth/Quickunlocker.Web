@@ -1,0 +1,120 @@
+@page "{id:guid}"
+@model Quickunlocker.Web.Pages.AdminPanel.Countries.EditModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Edit Country";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Country</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Index">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Countries">Countries</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Country Information</h3>
+                    </div>
+                    <form method="post">
+                        <input type="hidden" asp-for="Country.Id" />
+                        <input type="hidden" asp-for="Country.CreatedAt" />
+                        <input type="hidden" asp-for="Country.IsDeleted" />
+                        <input type="hidden" asp-for="Country.DeletedAt" />
+                        
+                        <div class="card-body">
+                            @if (!ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+                            
+                            <div class="form-group">
+                                <label asp-for="Country.Name">Country Name *</label>
+                                <input class="form-control" asp-for="Country.Name" />
+                                <span asp-validation-for="Country.Name" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Country.Code">Country Code *</label>
+                                <input class="form-control text-uppercase" asp-for="Country.Code" maxlength="3" />
+                                <span asp-validation-for="Country.Code" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Country.FlagUrl">Flag Icon URL</label>
+                                <input class="form-control" asp-for="Country.FlagUrl" />
+                                <span asp-validation-for="Country.FlagUrl" class="text-danger"></span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.Country.FlagUrl))
+                            {
+                                <div class="form-group">
+                                    <label>Current Flag</label>
+                                    <div>
+                                        <img src="@Model.Country.FlagUrl" alt="@Model.Country.Name" class="img-thumbnail" style="max-height:60px;" />
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label asp-for="Country.DisplayOrder">Display Order</label>
+                                <input type="number" class="form-control" asp-for="Country.DisplayOrder" />
+                                <span asp-validation-for="Country.DisplayOrder" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" asp-for="Country.IsActive" id="isActiveSwitch" />
+                                    <label class="custom-control-label" for="isActiveSwitch">
+                                        <strong>Enable this country</strong>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="icon fas fa-info-circle"></i>
+                                <strong>Created:</strong> @Model.Country.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                                @if (Model.Country.UpdatedAt.HasValue)
+                                {
+                                    <br />
+                                    <strong>Last Updated:</strong> @Model.Country.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer">
+                            <button class="btn btn-warning" type="submit">
+                                <i class="fas fa-save"></i> Update Country
+                            </button>
+                            <a class="btn btn-secondary" href="/AdminPanel/Countries">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

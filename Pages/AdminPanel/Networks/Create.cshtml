@@ -1,0 +1,131 @@
+@page
+@model Quickunlocker.Web.Pages.AdminPanel.Networks.CreateModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Add Network";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add New Mobile Network</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Index">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Networks">Networks</a></li>
+                    <li class="breadcrumb-item active">Add Network</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Network Information</h3>
+                    </div>
+                    <form method="post">
+                        <div class="card-body">
+                            @if (!ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+                            
+                            <div class="form-group">
+                                <label asp-for="Network.CountryId">Country *</label>
+                                <select class="form-control" asp-for="Network.CountryId" asp-items="Model.CountryOptions">
+                                    <option value="">-- Select Country --</option>
+                                </select>
+                                <span asp-validation-for="Network.CountryId" class="text-danger"></span>
+                                <small class="form-text text-muted">
+                                    Select the country where this network operates.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Network.Name">Network Name *</label>
+                                <input class="form-control" asp-for="Network.Name" placeholder="e.g., Zain, Ooredoo, Viva" />
+                                <span asp-validation-for="Network.Name" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Network.LogoUrl">Network Logo URL</label>
+                                <input class="form-control" asp-for="Network.LogoUrl" placeholder="https://example.com/logo.png" />
+                                <span asp-validation-for="Network.LogoUrl" class="text-danger"></span>
+                                <small class="form-text text-muted">
+                                    Optional: URL to the network's logo image.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Network.DisplayOrder">Display Order</label>
+                                <input type="number" class="form-control" asp-for="Network.DisplayOrder" />
+                                <span asp-validation-for="Network.DisplayOrder" class="text-danger"></span>
+                                <small class="form-text text-muted">
+                                    Lower numbers appear first. Use 0 for default.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" asp-for="Network.IsActive" id="isActiveSwitch" checked />
+                                    <label class="custom-control-label" for="isActiveSwitch">
+                                        <strong>Enable this network</strong>
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Only enabled networks will be visible to users.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-save"></i> Save Network
+                            </button>
+                            <a class="btn btn-secondary" href="/AdminPanel/Networks">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Tips</h3>
+                    </div>
+                    <div class="card-body">
+                        <h6><i class="fas fa-globe"></i> Country Selection</h6>
+                        <p class="small">Select the country where this mobile network operates. Networks are grouped by country.</p>
+                        
+                        <hr>
+                        
+                        <h6><i class="fas fa-image"></i> Network Logos</h6>
+                        <p class="small">Add network logo URLs for better user experience. Recommended size: 60x30px</p>
+                        
+                        <hr>
+                        
+                        <h6><i class="fas fa-sort-numeric-down"></i> Display Order</h6>
+                        <p class="small">Controls the order networks appear in dropdowns within each country. Lower numbers appear first.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

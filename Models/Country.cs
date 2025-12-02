@@ -1,31 +1,32 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Quickunlocker.Web.Models
 {
-    public class Device
+    public class Country
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
-        
-        [Required]
-        public long Tac { get; set; }
-        
+
         [Required]
         [StringLength(100)]
-        public string Brand { get; set; }
-        
+        public string Name { get; set; } = string.Empty;
+
         [Required]
-        [StringLength(200)]
-        public string Model { get; set; }
-        
+        [StringLength(3)]
+        public string Code { get; set; } = string.Empty; // ISO 3166-1 alpha-2 (e.g., US, UK, IN)
+
         [StringLength(500)]
-        public string? BrandLogoUrl { get; set; }
-        
+        public string? FlagUrl { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public int DisplayOrder { get; set; } = 0; // For sorting countries
+
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? UpdatedAt { get; set; }
-        
-        // Soft Delete properties
+
+        // Soft Delete
         public bool IsDeleted { get; set; } = false;
         public DateTimeOffset? DeletedAt { get; set; }
     }

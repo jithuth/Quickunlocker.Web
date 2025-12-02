@@ -4,6 +4,9 @@
     ViewData["Title"] = "Unlock Your Router, WiFi & MiFi Today";
 }
 
+<!-- Add Select2 CSS in head -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 <div class="container-fluid py-5">
     <div class="row justify-content-between align-items-center">
         <!-- Unlock Wizard Section -->
@@ -25,16 +28,14 @@
                 <form id="unlockForm" autocomplete="off" onsubmit="return false;">
                     <div class="mb-3">
                         <label class="form-label">Select Country</label>
-                        <select class="form-select" id="countrySelect">
-                            <option value="Kuwait" selected>Kuwait</option>
-                            <!-- Add more countries here -->
+                        <select class="form-select" id="countrySelect" style="width: 100%;">
+                            <option value="">Loading countries...</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Select Network</label>
                         <select class="form-select" id="networkSelect">
-                            <option value="STC Kuwait" selected>STC Kuwait</option>
-                            <!-- Add more networks here -->
+                            <option value="">Select country first...</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -55,24 +56,16 @@
                         <i class="bi bi-unlock-fill"></i> Buy Router Unlock Code
                     </button>
                 </form>
-
-
-
-
             </div>
         </div>
     </div>
 
-    <!-- Brand Logo Row 
-    <div id="brandLogoMarquee" class="brand-logo-marquee"></div>
-    -->
     <!-- Video/Technology Info Cards -->
     <div class="container mt-5">
         <h2 class="mb-4 text-center" style="color:#fff; font-weight:700;">
             Best <span style="color:#37e2f1;">Router & MiFi</span> Unlocking Videos
         </h2>
         <div class="row">
-            @* Demo grid: repeat as needed *@
             <div class="col-md-4 col-lg-3">
                 <div class="video-card p-2">
                     <img src="/images/video1.jpg" class="w-100" alt="Vodafone Egypt Unlock" />
@@ -83,53 +76,150 @@
                     </div>
                 </div>
             </div>
-            <!-- Repeat .col for other video/info cards (add real images/links) -->
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Add Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
     <script>
-                      async function loadBrandLogoMarquee() {
-            const marqueeElem = document.getElementById("brandLogoMarquee");
-            if (!marqueeElem) return;
+        let selectedCountryCode = '';
 
+        // Load active countries with flags
+        async function loadCountries() {
+            const countrySelect = $('#countrySelect');
             try {
-                const res = await axios.get('/api/DeviceLookup/available');
-                const logos = res.data || [];
-                if (logos.length === 0) return;
+                const res = await axios.get('/api/Country/active');
+                const countries = res.data || [];
+                
+                countrySelect.empty();
+                countrySelect.append(new Option('-- Select Country --', '', true, true));
+                
+                countries.forEach(country => {
+                    const option = new Option(country.name, country.code, false, false);
+                    option.setAttribute('data-flag', country.flagUrl || '');
+                    option.setAttribute('data-code', country.code);
+                    countrySelect.append(option);
+                });
 
-                // Double for seamless loop
-                const logosHtml = logos.concat(logos).map(logo =>
-                    `<img src="${logo}" onerror="this.src='/images/default_brand.png';"/>`
-                ).join('');
+                // Initialize Select2 with flag images
+                countrySelect.select2({
+                    placeholder: '-- Select Country --',
+                    allowClear: true,
+                    templateResult: formatCountry,
+                    templateSelection: formatCountrySelection
+                });
 
-                marqueeElem.innerHTML = `<div class="marquee-track">${logosHtml}</div>`;
-            } catch {
-                marqueeElem.textContent = "Brand logos could not be loaded.";
+                // When country changes, load networks
+                countrySelect.on('change', function() {
+                    const countryCode = $(this).val();
+                    selectedCountryCode = countryCode;
+                    loadNetworks(countryCode);
+                });
+
+            } catch (error) {
+                console.error('Failed to load countries:', error);
+                countrySelect.html('<option value="">Error loading countries</option>');
             }
         }
-      //  loadBrandLogoMarquee();
 
+        // Load networks by country code
+        async function loadNetworks(countryCode) {
+            const networkSelect = $('#networkSelect');
+            networkSelect.html('<option value="">Loading networks...</option>');
 
-    </script>
+            if (!countryCode) {
+                networkSelect.html('<option value="">Select country first...</option>');
+                return;
+            }
 
-    <script>
+            try {
+                const res = await axios.get('/api/Network/by-country/' + countryCode);
+                const networks = res.data || [];
+                
+                networkSelect.empty();
+                
+                if (networks.length === 0) {
+                    networkSelect.append(new Option('No networks available', '', true, true));
+                } else {
+                    networkSelect.append(new Option('-- Select Network --', '', true, true));
+                    
+                    networks.forEach(network => {
+                        const option = new Option(network.name, network.id, false, false);
+                        option.setAttribute('data-logo', network.logoUrl || '');
+                        networkSelect.append(option);
+                    });
+                }
+
+            } catch (error) {
+                console.error('Failed to load networks:', error);
+                networkSelect.html('<option value="">Error loading networks</option>');
+            }
+        }
+
+        // Format country option with flag (for dropdown list)
+        function formatCountry(country) {
+            if (!country.id) {
+                return country.text;
+            }
+            
+            const $option = $(country.element);
+            const flagUrl = $option.data('flag');
+            
+            if (!flagUrl) {
+                return country.text;
+            }
+
+            const $country = $(
+                '<span><img src="' + flagUrl + '" class="img-flag" style="width:25px; height:auto; margin-right:8px; vertical-align:middle;" /> ' + country.text + '</span>'
+            );
+            
+            return $country;
+        }
+
+        // Format selected country with flag (in the select box)
+        function formatCountrySelection(country) {
+            if (!country.id) {
+                return country.text;
+            }
+            
+            const $option = $(country.element);
+            const flagUrl = $option.data('flag');
+            
+            if (!flagUrl) {
+                return country.text;
+            }
+
+            const $country = $(
+                '<span><img src="' + flagUrl + '" class="img-flag" style="width:20px; height:auto; margin-right:6px; vertical-align:middle;" /> ' + country.text + '</span>'
+            );
+            
+            return $country;
+        }
+
+        // Initialize on page load
+        $(document).ready(function() {
+            loadCountries();
+        });
+
         // Wizard logic: IMEI input validation and API check
         const imeiInput = document.getElementById('imeiInput');
         const imeiStatus = document.getElementById('imeiStatus');
         const deviceInfo = document.getElementById('deviceInfo');
         const unlockBtn = document.getElementById('unlockBtn');
-        const brandName = document.getElementById('brandName');
-        const modelName = document.getElementById('modelName');
-        const brandLogo = document.getElementById('brandLogo');
+        const brandNameElem = document.getElementById('brandName');
+        const modelNameElem = document.getElementById('modelName');
+        const brandLogoElem = document.getElementById('brandLogo');
 
         imeiInput.addEventListener('input', async function() {
             const imei = imeiInput.value;
             imeiStatus.style.color = "#eee";
             unlockBtn.disabled = true;
             deviceInfo.style.display = "none";
+            
             if (imei.length === 15 && /^\d+$/.test(imei)) {
                 imeiStatus.textContent = "Checking device...";
                 try {
@@ -137,9 +227,9 @@
                     if(res.data && res.data.brand && res.data.model) {
                         imeiStatus.textContent = "IMEI is verified, brand and model are Found.";
                         imeiStatus.style.color = "#53f12b";
-                        brandName.textContent = res.data.brand;
-                        modelName.textContent = res.data.model;
-                        brandLogo.src = res.data.brandLogoUrl;
+                        brandNameElem.textContent = res.data.brand;
+                        modelNameElem.textContent = res.data.model;
+                        brandLogoElem.src = res.data.brandLogoUrl || '/images/default_brand.png';
                         deviceInfo.style.display = "";
                         unlockBtn.disabled = false;
                     } else {
@@ -156,4 +246,40 @@
             }
         });
     </script>
+
+    <style>
+        /* Custom Select2 styling to match your theme */
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+        
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+        
+        .select2-dropdown {
+            border: 1px solid #ced4da;
+        }
+        
+        .select2-search--dropdown .select2-search__field {
+            border: 1px solid #ced4da;
+        }
+        
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #37e2f1;
+        }
+        
+        /* Flag image styling */
+        .img-flag {
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+    </style>
 }

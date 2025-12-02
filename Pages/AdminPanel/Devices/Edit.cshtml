@@ -1,0 +1,119 @@
+@page "{id:guid}"
+@model Quickunlocker.Web.Pages.AdminPanel.Devices.EditModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Edit Device";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Device</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Index">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Devices">Devices</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Device Information</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <form method="post">
+                        <input type="hidden" asp-for="Device.Id" />
+                        <input type="hidden" asp-for="Device.CreatedAt" />
+                        <input type="hidden" asp-for="Device.IsDeleted" />
+                        <input type="hidden" asp-for="Device.DeletedAt" />
+                        
+                        <div class="card-body">
+                            @if (!ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+                            
+                            <div class="form-group">
+                                <label asp-for="Device.Tac">TAC (Type Allocation Code)</label>
+                                <input class="form-control" asp-for="Device.Tac" placeholder="Enter 8-digit TAC" />
+                                <span asp-validation-for="Device.Tac" class="text-danger"></span>
+                                <small class="form-text text-muted">TAC is the first 8 digits of the IMEI number.</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Device.Brand">Brand</label>
+                                <input class="form-control" asp-for="Device.Brand" placeholder="e.g., Apple, Samsung, Xiaomi" />
+                                <span asp-validation-for="Device.Brand" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Device.Model">Model</label>
+                                <input class="form-control" asp-for="Device.Model" placeholder="e.g., iPhone 15 Pro, Galaxy S24" />
+                                <span asp-validation-for="Device.Model" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Device.BrandLogoUrl">Brand Logo URL</label>
+                                <input class="form-control" asp-for="Device.BrandLogoUrl" placeholder="https://example.com/logo.png" />
+                                <span asp-validation-for="Device.BrandLogoUrl" class="text-danger"></span>
+                                <small class="form-text text-muted">Optional: URL to the brand logo image.</small>
+                            </div>
+
+                            <!-- Preview Logo -->
+                            @if (!string.IsNullOrEmpty(Model.Device.BrandLogoUrl))
+                            {
+                                <div class="form-group">
+                                    <label>Current Logo</label>
+                                    <div>
+                                        <img src="@Model.Device.BrandLogoUrl" alt="@Model.Device.Brand" class="img-thumbnail" style="max-height:100px;" />
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="alert alert-info">
+                                <i class="icon fas fa-info-circle"></i>
+                                <strong>Created:</strong> @Model.Device.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                                @if (Model.Device.UpdatedAt.HasValue)
+                                {
+                                    <br />
+                                    <strong>Last Updated:</strong> @Model.Device.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")
+                                }
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        
+                        <div class="card-footer">
+                            <button class="btn btn-warning" type="submit">
+                                <i class="fas fa-save"></i> Update Device
+                            </button>
+                            <a class="btn btn-secondary" href="/AdminPanel/Devices">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

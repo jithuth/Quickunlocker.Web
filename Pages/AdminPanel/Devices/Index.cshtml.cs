@@ -21,22 +21,26 @@ namespace Quickunlocker.Web.Pages.AdminPanel.Devices
 
         public List<Device> Devices { get; set; } = new();
         
-        [BindProperty(SupportsGet = true)]
-        public int Page { get; set; } = 1;
-        
         public int CurrentPage { get; set; } = 1;
         public int TotalPages { get; set; }
-        
-        [BindProperty(SupportsGet = true)]
         public string? Search { get; set; }
-        
         public int SerialStart { get; set; } = 1;
         public int TotalItems { get; set; }
         private const int PageSize = 10;
 
-        public IActionResult OnGet()
+        public IActionResult OnGet([FromQuery] int? page, [FromQuery] string? search)
         {
-            _logger.LogInformation("OnGet called - Page: {Page}, Search: {Search}", Page, Search ?? "null");
+            // Log raw parameters
+            _logger.LogInformation("========================================");
+            _logger.LogInformation("OnGet CALLED - Raw Parameters:");
+            _logger.LogInformation("  page parameter: {Page}", page?.ToString() ?? "NULL");
+            _logger.LogInformation("  search parameter: {Search}", search ?? "NULL");
+            _logger.LogInformation("  Query String: {QueryString}", Request.QueryString.ToString());
+            _logger.LogInformation("========================================");
+            
+            // Set properties from parameters
+            CurrentPage = page ?? 1;
+            Search = search ?? "";
             
             LoadDevices();
             
@@ -49,23 +53,22 @@ namespace Quickunlocker.Web.Pages.AdminPanel.Devices
             if (isAjax)
             {
                 _logger.LogInformation("Returning partial view with {Count} devices", Devices.Count);
-                // Return partial view for AJAX requests
                 return Partial("_DeviceTablePartial", this);
             }
             
             _logger.LogInformation("Returning full page with {Count} devices", Devices.Count);
-            // Return full page for regular requests
             return Page();
         }
 
         private void LoadDevices()
         {
-            // Use Page parameter for current page
-            CurrentPage = Page < 1 ? 1 : Page;
+            // Ensure valid page number
+            if (CurrentPage < 1) CurrentPage = 1;
             Search = Search ?? "";
 
             _logger.LogInformation("LoadDevices - CurrentPage: {CurrentPage}, Search: '{Search}'", CurrentPage, Search);
 
+            // Global query filter automatically excludes soft-deleted devices
             IQueryable<Device> query = _db.Devices;
 
             // Apply search filter
@@ -98,7 +101,7 @@ namespace Quickunlocker.Web.Pages.AdminPanel.Devices
 
             // Get paginated devices
             Devices = query
-                .OrderBy(d => d.Id)
+                .OrderByDescending(d => d.CreatedAt)
                 .Skip((CurrentPage - 1) * PageSize)
                 .Take(PageSize)
                 .ToList();

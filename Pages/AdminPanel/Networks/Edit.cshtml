@@ -1,0 +1,122 @@
+@page "{id:guid}"
+@model Quickunlocker.Web.Pages.AdminPanel.Networks.EditModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Edit Network";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Mobile Network</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Index">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/AdminPanel/Networks">Networks</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Network Information</h3>
+                    </div>
+                    <form method="post">
+                        <input type="hidden" asp-for="Network.Id" />
+                        <input type="hidden" asp-for="Network.CreatedAt" />
+                        <input type="hidden" asp-for="Network.IsDeleted" />
+                        <input type="hidden" asp-for="Network.DeletedAt" />
+                        
+                        <div class="card-body">
+                            @if (!ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+                            
+                            <div class="form-group">
+                                <label asp-for="Network.CountryId">Country *</label>
+                                <select class="form-control" asp-for="Network.CountryId" asp-items="Model.CountryOptions">
+                                    <option value="">-- Select Country --</option>
+                                </select>
+                                <span asp-validation-for="Network.CountryId" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Network.Name">Network Name *</label>
+                                <input class="form-control" asp-for="Network.Name" />
+                                <span asp-validation-for="Network.Name" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Network.LogoUrl">Network Logo URL</label>
+                                <input class="form-control" asp-for="Network.LogoUrl" />
+                                <span asp-validation-for="Network.LogoUrl" class="text-danger"></span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.Network.LogoUrl))
+                            {
+                                <div class="form-group">
+                                    <label>Current Logo</label>
+                                    <div>
+                                        <img src="@Model.Network.LogoUrl" alt="@Model.Network.Name" class="img-thumbnail" style="max-height:60px;" />
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label asp-for="Network.DisplayOrder">Display Order</label>
+                                <input type="number" class="form-control" asp-for="Network.DisplayOrder" />
+                                <span asp-validation-for="Network.DisplayOrder" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" asp-for="Network.IsActive" id="isActiveSwitch" />
+                                    <label class="custom-control-label" for="isActiveSwitch">
+                                        <strong>Enable this network</strong>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="icon fas fa-info-circle"></i>
+                                <strong>Created:</strong> @Model.Network.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                                @if (Model.Network.UpdatedAt.HasValue)
+                                {
+                                    <br />
+                                    <strong>Last Updated:</strong> @Model.Network.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer">
+                            <button class="btn btn-warning" type="submit">
+                                <i class="fas fa-save"></i> Update Network
+                            </button>
+                            <a class="btn btn-secondary" href="/AdminPanel/Networks">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

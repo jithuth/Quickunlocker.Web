@@ -1,0 +1,270 @@
+@page
+@model Quickunlocker.Web.Pages.AdminPanel.DiagnosticModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Pagination Diagnostic";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <h1>Pagination Diagnostic Tool</h1>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        
+        <!-- System Status -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">System Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th style="width:300px">Check</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                            <tr>
+                                <td><strong>jQuery Loaded</strong></td>
+                                <td><span id="jqueryStatus" class="badge badge-secondary">Checking...</span></td>
+                                <td><span id="jqueryVersion"></span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Devices in Database</strong></td>
+                                <td><span class="badge badge-info">@Model.TotalDevices</span></td>
+                                <td>
+                                    @if (Model.TotalDevices < 11)
+                                    {
+                                        <span class="text-danger">?? Need at least 11 devices for pagination</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">? Sufficient for pagination</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Expected Pages</strong></td>
+                                <td><span class="badge badge-info">@Model.ExpectedPages</span></td>
+                                <td>Based on 10 items per page</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Soft-Deleted Devices</strong></td>
+                                <td><span class="badge badge-warning">@Model.SoftDeletedCount</span></td>
+                                <td>Hidden from pagination</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JavaScript Tests -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">JavaScript Tests</h3>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-primary" id="testJQuery">Test jQuery</button>
+                        <button class="btn btn-success" id="testAjax">Test AJAX to Devices Page</button>
+                        <button class="btn btn-info" id="checkPagination">Check Pagination Elements</button>
+                        <button class="btn btn-danger" id="clearResults">Clear Results</button>
+                        
+                        <div id="testResults" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Devices -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Sample Devices (First 10)</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.SampleDevices.Count > 0)
+                        {
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Brand</th>
+                                        <th>Model</th>
+                                        <th>TAC</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var device in Model.SampleDevices)
+                                    {
+                                        <tr>
+                                            <td>@device.Brand</td>
+                                            <td>@device.Model</td>
+                                            <td>@device.Tac</td>
+                                            <td>@device.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>No devices found!</strong>
+                                <p>You need to add devices to test pagination.</p>
+                                <a href="/AdminPanel/Devices/Create" class="btn btn-primary">Add Device Manually</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <a href="/AdminPanel/Devices" class="btn btn-primary">
+                            <i class="fas fa-list"></i> Go to Device List
+                        </a>
+                        <a href="/AdminPanel/Devices/Create" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add New Device
+                        </a>
+                        <button class="btn btn-warning" id="openConsole">
+                            <i class="fas fa-terminal"></i> Open Console (F12)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Check jQuery
+            if (typeof $ !== 'undefined') {
+                $('#jqueryStatus').removeClass('badge-secondary').addClass('badge-success').text('? Loaded');
+                $('#jqueryVersion').text('Version: ' + $.fn.jquery);
+            } else {
+                $('#jqueryStatus').removeClass('badge-secondary').addClass('badge-danger').text('? Not Loaded');
+                $('#jqueryVersion').text('ERROR: jQuery not found!');
+            }
+
+            // Test jQuery
+            $('#testJQuery').on('click', function() {
+                $('#testResults').html(`
+                    <div class="alert alert-success">
+                        <h5>? jQuery Test Passed</h5>
+                        <ul>
+                            <li>jQuery version: ${$.fn.jquery}</li>
+                            <li>$ is defined: ${typeof $ !== 'undefined'}</li>
+                            <li>jQuery is defined: ${typeof jQuery !== 'undefined'}</li>
+                            <li>Click event binding: Working</li>
+                        </ul>
+                    </div>
+                `);
+            });
+
+            // Test AJAX
+            $('#testAjax').on('click', function() {
+                $('#testResults').html('<div class="alert alert-info">Testing AJAX request...</div>');
+                
+                $.ajax({
+                    url: '/AdminPanel/Devices',
+                    type: 'GET',
+                    data: { page: 1, search: '' },
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function(response) {
+                        const isPartial = !response.includes('<!DOCTYPE');
+                        const hasTable = response.includes('<table');
+                        
+                        $('#testResults').html(`
+                            <div class="alert alert-${isPartial && hasTable ? 'success' : 'warning'}">
+                                <h5>${isPartial && hasTable ? '?' : '??'} AJAX Test Results</h5>
+                                <ul>
+                                    <li>Response received: Yes</li>
+                                    <li>Response length: ${response.length} characters</li>
+                                    <li>Is Partial View: ${isPartial ? 'Yes ?' : 'No ? (Full page returned)'}</li>
+                                    <li>Contains Table: ${hasTable ? 'Yes ?' : 'No ?'}</li>
+                                </ul>
+                                ${!isPartial ? '<p class="text-danger"><strong>Problem:</strong> Backend is returning full page instead of partial view. Check AJAX header detection.</p>' : ''}
+                            </div>
+                        `);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#testResults').html(`
+                            <div class="alert alert-danger">
+                                <h5>? AJAX Test Failed</h5>
+                                <ul>
+                                    <li>Status: ${status}</li>
+                                    <li>Error: ${error}</li>
+                                    <li>Status Code: ${xhr.status}</li>
+                                </ul>
+                            </div>
+                        `);
+                    }
+                });
+            });
+
+            // Check Pagination
+            $('#checkPagination').on('click', function() {
+                // Navigate to devices page and check
+                window.open('/AdminPanel/Devices', '_blank');
+                
+                $('#testResults').html(`
+                    <div class="alert alert-info">
+                        <h5>?? Pagination Check Instructions</h5>
+                        <p>The Devices page has been opened in a new tab.</p>
+                        <ol>
+                            <li>Press <kbd>F12</kbd> to open Developer Tools</li>
+                            <li>Go to <strong>Console</strong> tab</li>
+                            <li>Look for these messages:
+                                <ul>
+                                    <li>"Document ready - Initializing"</li>
+                                    <li>"bindPaginationClicks called"</li>
+                                    <li>"Found X pagination links"</li>
+                                </ul>
+                            </li>
+                            <li>If you see pagination links, click on page 2</li>
+                            <li>Check console for "Pagination link clicked"</li>
+                        </ol>
+                        <p><strong>Expected:</strong> If you have @Model.TotalDevices devices, you should see @Model.ExpectedPages page links.</p>
+                    </div>
+                `);
+            });
+
+            // Clear Results
+            $('#clearResults').on('click', function() {
+                $('#testResults').html('');
+            });
+
+            // Open Console hint
+            $('#openConsole').on('click', function() {
+                alert('Press F12 to open Developer Tools, then go to the Console tab.');
+            });
+
+            // Log diagnostic info
+            console.log('=== DIAGNOSTIC PAGE LOADED ===');
+            console.log('Total Devices:', @Model.TotalDevices);
+            console.log('Expected Pages:', @Model.ExpectedPages);
+            console.log('Soft Deleted:', @Model.SoftDeletedCount);
+            console.log('jQuery Loaded:', typeof $ !== 'undefined');
+            console.log('jQuery Version:', typeof $ !== 'undefined' ? $.fn.jquery : 'N/A');
+        });
+    </script>
+}
